@@ -16,7 +16,7 @@ fi
 cd "$(dirname "$0")/.."
 htpasswd=auth/htpasswd
 touch "$htpasswd"
-if grep -q "^${name}:" "$htpasswd"; then
+if cut -d: -f1 "$htpasswd" | grep -qxF "$name"; then
   echo "writer '$name' already exists; run remove-writer.sh first to rotate it" >&2
   exit 1
 fi

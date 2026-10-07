@@ -2,8 +2,9 @@
 #
 # The cache is published to the internet through cloudflared, which only needs
 # outbound internet access. Nothing on the LAN needs to reach the CT, and the
-# CT must not reach the LAN. Replace 192.168.0.1 with your router (DNS) and add
-# your delegated IPv6 prefix as an OUT DROP before deploying.
+# CT must not reach the LAN. Replace 10.30.30.1 with the CT's VLAN gateway and
+# 192.168.0.1 with your router (both answer DNS), and add your delegated IPv6
+# prefix as an OUT DROP before deploying.
 [OPTIONS]
 
 enable: 1
@@ -17,6 +18,8 @@ policy_out: ACCEPT
 [RULES]
 
 # First match wins: DNS to the router, then drop every private/home range.
+OUT ACCEPT -dest 10.30.30.1 -p udp -dport 53 -log nolog
+OUT ACCEPT -dest 10.30.30.1 -p tcp -dport 53 -log nolog
 OUT ACCEPT -dest 192.168.0.1 -p udp -dport 53 -log nolog
 OUT ACCEPT -dest 192.168.0.1 -p tcp -dport 53 -log nolog
 OUT DROP -dest 192.168.0.0/16 -log nolog

@@ -1,9 +1,4 @@
-# Shared ccache backend for dashpay/dash CI.
-#
-# bazel-remote stores ccache results under /ac/ (ccache's "bazel" layout) and
-# evicts least-recently-used entries once the cache reaches MAX_SIZE_GIB.
-# Anyone may read; writes need a credential from ./htpasswd (see
-# scripts/add-writer.sh). cloudflared is the only way in: no ports are published.
+# Shared ccache backend for dashpay/dash CI. See README.md.
 
 services:
   bazel-remote:

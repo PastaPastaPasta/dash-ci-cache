@@ -39,9 +39,11 @@ docker compose up -d
 Keep `DATA_DIR` on its own dataset with compression off: ccache entries are already
 zstd-compressed.
 
-Copy `proxmox/ct.fw` to `/etc/pve/firewall/<vmid>.fw` on the host after
-filling in your router address and IPv6 prefix. The CT then reaches the
-internet but not the LAN.
+Put the CT on an isolated VLAN that the router keeps away from the LAN (the
+deployed one is VLAN 30, `10.30.30.0/24`). As a second layer, copy
+`proxmox/ct.fw` to `/etc/pve/firewall/<vmid>.fw` on the host after filling in
+the VLAN gateway, router and IPv6 prefix. The CT then reaches the internet but
+nothing else at home, including its VLAN neighbours.
 
 In Cloudflare Zero Trust, create a tunnel whose public hostname
 `cache.thepasta.org` points at `http://bazel-remote:8080`, and put its token in
