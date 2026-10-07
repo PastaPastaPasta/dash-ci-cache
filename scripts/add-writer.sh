@@ -27,6 +27,8 @@ fi
 password="$(openssl rand -hex 24)"
 hash="$(printf '%s' "$password" | openssl dgst -sha1 -binary | base64)"
 echo "${name}:{SHA}${hash}" >> "$htpasswd"
+# bazel-remote reads it as uid 1000, whatever umask this shell has.
+chmod 0644 "$htpasswd"
 
 docker compose restart bazel-remote >&2
 echo "${name}:${password}"

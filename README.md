@@ -43,7 +43,9 @@ Put the CT on an isolated VLAN that the router keeps away from the LAN (the
 deployed one is VLAN 30, `10.30.30.0/24`). As a second layer, copy
 `proxmox/ct.fw` to `/etc/pve/firewall/<vmid>.fw` on the host after filling in
 the VLAN gateway, router and IPv6 prefix. The CT then reaches the internet but
-nothing else at home, including its VLAN neighbours.
+nothing else at home, including its VLAN neighbours. The file only takes effect
+when the datacenter firewall is enabled (`enable: 1` in
+`/etc/pve/firewall/cluster.fw`) and the CT's NIC has `firewall=1`.
 
 In Cloudflare Zero Trust, create a tunnel whose public hostname
 `cache.thepasta.org` points at `http://bazel-remote:8080`, and put its token in

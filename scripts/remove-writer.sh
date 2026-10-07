@@ -12,5 +12,6 @@ if ! cut -d: -f1 "$htpasswd" | grep -qxF "$name"; then
 fi
 
 awk -F: -v n="$name" '$1 != n' "$htpasswd" > "$htpasswd.new"
+chmod 0644 "$htpasswd.new"
 mv "$htpasswd.new" "$htpasswd"
 docker compose restart bazel-remote
