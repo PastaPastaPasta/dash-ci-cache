@@ -1,0 +1,36 @@
+# Shared ccache backend for dashpay/dash CI.
+#
+# bazel-remote stores ccache results under /ac/ (ccache's "bazel" layout) and
+# evicts least-recently-used entries once the cache reaches MAX_SIZE_GIB.
+# Anyone may read; writes need a credential from ./htpasswd (see
+# scripts/add-writer.sh). cloudflared is the only way in: no ports are published.
+
+services:
+  bazel-remote:
+    image: buchgr/bazel-remote-cache:v2.6.2
+    restart: unless-stopped
+    user: "1000:1000"
+    volumes:
+      - ./data:/data
+      - ./auth:/etc/bazel-remote:ro
+    command:
+      - --dir=/data
+      - --max_size=${MAX_SIZE_GIB:-250}
+      - --http_address=0.0.0.0:8080
+      - --grpc_address=none
+      # ccache writes arbitrary values under /ac/, not Bazel ActionResults.
+      - --disable_http_ac_validation
+      - --htpasswd_file=/etc/bazel-remote/htpasswd
+      - --allow_unauthenticated_reads
+      # Cloudflare rejects request bodies over 100 MB anyway.
+      - --max_blob_size=104857600
+      - --access_log_level=none
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.0
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}
+    depends_on:
+      - bazel-remote

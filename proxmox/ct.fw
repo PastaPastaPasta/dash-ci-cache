@@ -1,0 +1,31 @@
+# Proxmox firewall for the cache CT (/etc/pve/firewall/<vmid>.fw).
+#
+# The cache is published to the internet through cloudflared, which only needs
+# outbound internet access. Nothing on the LAN needs to reach the CT, and the
+# CT must not reach the LAN. Replace 192.168.0.1 with your router (DNS) and add
+# your delegated IPv6 prefix as an OUT DROP before deploying.
+[OPTIONS]
+
+enable: 1
+dhcp: 1
+ipfilter: 0
+ndp: 1
+radv: 0
+policy_in: DROP
+policy_out: ACCEPT
+
+[RULES]
+
+# First match wins: DNS to the router, then drop every private/home range.
+OUT ACCEPT -dest 192.168.0.1 -p udp -dport 53 -log nolog
+OUT ACCEPT -dest 192.168.0.1 -p tcp -dport 53 -log nolog
+OUT DROP -dest 192.168.0.0/16 -log nolog
+OUT DROP -dest 172.16.0.0/12 -log nolog
+OUT DROP -dest 10.0.0.0/8 -log nolog
+OUT DROP -dest 100.64.0.0/10 -log nolog
+OUT DROP -dest fc00::/7 -log nolog
+# Link-local v6 reaches every host on the bridge (NDP itself is allowed by ndp: 1).
+OUT DROP -dest fe80::/10 -log nolog
+OUT DROP -dest ff00::/8 -log nolog
+OUT DROP -dest 224.0.0.0/4 -log nolog
+OUT DROP -dest 169.254.0.0/16 -log nolog
