@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
     user: "1000:1000"
     volumes:
-      - ./data:/data
+      - ${DATA_DIR:-./data}:/data
       - ./auth:/etc/bazel-remote:ro
     command:
       - --dir=/data

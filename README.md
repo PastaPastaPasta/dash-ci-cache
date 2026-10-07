@@ -29,12 +29,14 @@ On the Proxmox host (unprivileged LXC with Docker, i.e. `nesting=1,keyctl=1`):
 ```sh
 git clone https://github.com/PastaPastaPasta/dash-ci-cache /srv/dash-ci-cache
 cd /srv/dash-ci-cache
-mkdir -p data auth && touch auth/htpasswd && chown -R 1000:1000 data
-umask 077 && echo "TUNNEL_TOKEN=<token>" > .env
+mkdir -p auth && touch auth/htpasswd
+# DATA_DIR defaults to ./data; point it at a dedicated mount instead.
+mkdir -p /srv/cache-data && chown 1000:1000 /srv/cache-data
+umask 077 && printf 'DATA_DIR=/srv/cache-data\nTUNNEL_TOKEN=<token>\n' > .env
 docker compose up -d
 ```
 
-Keep `data` on its own dataset with compression off: ccache entries are already
+Keep `DATA_DIR` on its own dataset with compression off: ccache entries are already
 zstd-compressed.
 
 Copy `proxmox/ct.fw` to `/etc/pve/firewall/<vmid>.fw` on the host after
@@ -64,7 +66,7 @@ Entries can't be traced back to a writer, but everything regenerates on the
 next build. Revoke the writer, then:
 
 ```sh
-docker compose stop bazel-remote && rm -rf data/* && docker compose start bazel-remote
+docker compose stop bazel-remote && rm -rf /srv/cache-data/* && docker compose start bazel-remote
 ```
 
 ## Checks
